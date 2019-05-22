@@ -1,11 +1,15 @@
 // from data.js
 var ufoData = data;
+var counter = 0;
 
 // Reference to table body location in index.html
 var tbody = d3.select("tbody");
 
-// Console.log the alien table data from data.js
-// console.log(tableData);
+// Initialize list to hold unique shape options
+var shapeOptions = [];
+
+// Reference to shape option location in index.html
+var optionsList = d3.select("select");
 
 // Function to render table
 function renderTable(tableData) {
@@ -28,7 +32,19 @@ function renderTable(tableData) {
 
             // Use d3 to update each cell's text with alien report values
             cell.text(value);
+
+            // Append to list of unique shape options
+            if (key === "shape") {
+                if (!(shapeOptions.includes(value))) {
+                    shapeOptions.push(value);
+                    // Use d3 to append 1 cell per options for shape to dropdown list in filter
+                    var option = optionsList.append("option")
+                    // Use d3 to update each option's text with unique shape options
+                    option.text(value)
+                }
+            }
         })
+
     });
 }
 
@@ -42,14 +58,41 @@ function filterButton() {
     d3.event.preventDefault();
 
     var queryDate = d3.select("#datetime").property("value");
+    var queryCity = d3.select("#city").property("value");
+    var queryState = d3.select("#state").property("value");
+    var queryCountry = d3.select("#country").property("value");
+    var queryShape = d3.select("#shape").property("value");
 
     var filteredData = data;
     if (queryDate != "") {
         filteredData = filteredData.filter(d => d.datetime == queryDate);
     }
+    if (queryCity != "") {
+        filteredData = filteredData.filter(d => d.city.toLowerCase() == queryCity.toLowerCase());
+    }
+    if (queryState != "") {
+        filteredData = filteredData.filter(d => d.state.toLowerCase() == queryState.toLowerCase());
+    }
+    if (queryCountry != "") {
+        filteredData = filteredData.filter(d => d.country.toLowerCase() == queryCountry.toLowerCase());
+    }
+    if (queryShape != "Select Shape") {
+        filteredData = filteredData.filter(d => d.shape.toLowerCase() == queryShape.toLowerCase());
+    }
     tbody.html('');
     renderTable(filteredData);
 }
 
+// Reference to reset button
+var reset = d3.select("#reset-btn");
+
+// Function to reset data
+function resetButton() {
+    d3.event.preventDefault();
+    tbody.html('');
+    renderTable(ufoData)
+}
+
 renderTable(ufoData);
 filter.on("click", filterButton);
+reset.on("click", resetButton);
